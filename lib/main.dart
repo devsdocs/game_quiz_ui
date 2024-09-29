@@ -109,7 +109,8 @@ class QuizResultWidgetState extends State<QuizResultWidget> {
   Widget build(BuildContext context) {
     final question = widget.questionData['question'];
     final correctAnswer = widget.questionData['option']['answer'];
-    final options = [correctAnswer, ...widget.questionData['option']['other']];
+    final options = [correctAnswer, ...widget.questionData['option']['other']]
+      ..shuffle();
     final imageUrl = widget.questionData['extra']; // Image URL from 'extra'
 
     return Card(
