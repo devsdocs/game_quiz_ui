@@ -110,6 +110,7 @@ class QuizResultWidgetState extends State<QuizResultWidget> {
     final question = widget.questionData['question'];
     final correctAnswer = widget.questionData['option']['answer'];
     final options = [correctAnswer, ...widget.questionData['option']['other']];
+    final imageUrl = widget.questionData['extra']; // Image URL from 'extra'
 
     return Card(
       margin: const EdgeInsets.all(8.0),
@@ -118,6 +119,12 @@ class QuizResultWidgetState extends State<QuizResultWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Display the image if the URL is available
+            if (imageUrl != null && imageUrl.toString().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Image.network(imageUrl.toString()),
+              ),
             Text(
               question,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
