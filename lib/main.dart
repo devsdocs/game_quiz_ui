@@ -106,13 +106,15 @@ class QuizResultWidget extends StatefulWidget {
 class QuizResultWidgetState extends State<QuizResultWidget> {
   String? selectedAnswer;
   bool? isCorrect;
+  bool firstLoad = true;
+  late List<dynamic> options;
 
   @override
   Widget build(BuildContext context) {
     final question = widget.questionData['question'];
     final correctAnswer = widget.questionData['option']['answer'];
-    final options = [correctAnswer, ...widget.questionData['option']['other']]
-      ..shuffle();
+    final list = [correctAnswer, ...widget.questionData['option']['other']];
+    options = firstLoad ? (list..shuffle()) : options;
     final imageUrl = widget.questionData['extra']; // Image URL from 'extra'
 
     return Card(
@@ -153,6 +155,7 @@ class QuizResultWidgetState extends State<QuizResultWidget> {
                   groupValue: selectedAnswer,
                   onChanged: (value) {
                     setState(() {
+                      firstLoad = false;
                       selectedAnswer = value;
                       // Check if the answer is correct
                       isCorrect = (selectedAnswer == correctAnswer);
