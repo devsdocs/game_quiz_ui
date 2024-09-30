@@ -33,7 +33,8 @@ class _Api {
         if (type != null) 'type': type.val,
         if (session != null) 'session': session
       }))
-          .data!;
+          .data ??
+      {};
 }
 
 enum QuizType {

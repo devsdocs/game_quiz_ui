@@ -68,17 +68,19 @@ class QuizBuilderState extends State<QuizBuilder> {
               }
               if (s.hasData) {
                 final res = s.data!;
-                if (res['result'] == 'ok') {
-                  final data = (res['data'] as List)
-                      .map((d) => d as Map<String, dynamic>)
-                      .toList();
+                if (res.isNotEmpty) {
+                  if (res['result'] == 'ok') {
+                    final data = (res['data'] as List)
+                        .map((d) => d as Map<String, dynamic>)
+                        .toList();
 
-                  return ListView.builder(
-                    itemCount: data.length,
-                    itemBuilder: (b, i) {
-                      return QuizResultWidget(questionData: data[i]);
-                    },
-                  );
+                    return ListView.builder(
+                      itemCount: data.length,
+                      itemBuilder: (b, i) {
+                        return QuizResultWidget(questionData: data[i]);
+                      },
+                    );
+                  }
                 }
               } else if (s.hasError) {
                 return Center(child: Text('Error loading quiz: ${s.error}'));
