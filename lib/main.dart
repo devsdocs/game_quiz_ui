@@ -126,7 +126,18 @@ class QuizResultWidgetState extends State<QuizResultWidget> {
             if (imageUrl != null && imageUrl.toString().isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
-                child: Image.network(imageUrl.toString()),
+                child: Image.network(
+                  imageUrl.toString(),
+                  loadingBuilder: (_, child, loadingProgress) =>
+                      const Text('Loading image...'),
+                  errorBuilder: (_, error, __) => Text(
+                    error.toString(),
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red),
+                  ),
+                ),
               ),
             Text(
               question,
