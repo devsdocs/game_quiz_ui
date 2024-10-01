@@ -13,20 +13,20 @@ class MainApp extends StatelessWidget {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: QuizBuilder(),
+        body: RandomQuizBuilder(),
       ),
     );
   }
 }
 
-class QuizBuilder extends StatefulWidget {
-  const QuizBuilder({super.key});
+class RandomQuizBuilder extends StatefulWidget {
+  const RandomQuizBuilder({super.key});
 
   @override
-  QuizBuilderState createState() => QuizBuilderState();
+  RandomQuizBuilderState createState() => RandomQuizBuilderState();
 }
 
-class QuizBuilderState extends State<QuizBuilder> {
+class RandomQuizBuilderState extends State<RandomQuizBuilder> {
   late Future<Map<String, dynamic>> _quizData;
 
   @override
