@@ -49,48 +49,46 @@ class QuizBuilderState extends State<QuizBuilder> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Refresh button
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ElevatedButton(
-            onPressed: _refreshQuiz, // Fetch new quiz data on refresh
-            child: const Text('Refresh Questions'),
-          ),
-        ),
-        // Quiz content
-        Expanded(
-          child: FutureBuilder<Map<String, dynamic>>(
-            future: _quizData,
-            builder: (b, s) {
-              if (s.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (s.hasData) {
-                final res = s.data!;
-                if (res.isNotEmpty) {
-                  if (res['result'] == 'ok') {
-                    final data = (res['data'] as List)
-                        .map((d) => d as Map<String, dynamic>)
-                        .toList();
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _quizData,
+      builder: (b, s) {
+        if (s.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (s.hasData) {
+          final res = s.data!;
+          if (res.isNotEmpty) {
+            if (res['result'] == 'ok') {
+              final data = (res['data'] as List)
+                  .map((d) => d as Map<String, dynamic>)
+                  .toList();
 
-                    return ListView.builder(
-                      itemCount: data.length,
-                      itemBuilder: (b, i) {
-                        return QuizResultWidget(questionData: data[i]);
-                      },
-                    );
-                  }
-                }
-              } else if (s.hasError) {
-                return Center(child: Text('Error loading quiz: ${s.error}'));
-              }
-              return const Center(child: Text('No data available'));
-            },
-          ),
-        ),
-      ],
+              return Column(children: [
+                // Refresh button
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: _refreshQuiz, // Fetch new quiz data on refresh
+                    child: const Text('Refresh Questions'),
+                  ),
+                ),
+
+                // Quiz content
+                Expanded(
+                    child: ListView.builder(
+                  itemCount: data.length,
+                  itemBuilder: (b, i) {
+                    return QuizResultWidget(questionData: data[i]);
+                  },
+                ))
+              ]);
+            }
+          }
+        } else if (s.hasError) {
+          return Center(child: Text('Error loading quiz: ${s.error}'));
+        }
+        return const Center(child: Text('No data available'));
+      },
     );
   }
 }
