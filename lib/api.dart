@@ -28,14 +28,53 @@ class _Api {
     int? amount,
     QuizType? type,
     String? session,
+    ImageSize? imageSize,
   }) async =>
       (await _get('/random/${amount ?? 10}', {
         if (type != null) 'type': type.val,
-        if (session != null) 'session': session
+        if (session != null) 'session': session,
+        if (imageSize != null) 'image_size': imageSize.url
+      }))
+          .data ??
+      {};
+
+  Future<Map<String, dynamic>> getGameId(
+    int gameId, {
+    QuizType? type,
+    ImageSize? imageSize,
+    int? limit = 10,
+    int? offset = 0,
+  }) async =>
+      (await _get('/topic/games/$gameId', {
+        if (type != null) 'type': type.val,
+        if (imageSize != null) 'image_size': imageSize.url,
+        if (limit != null) 'limit': limit.toString(),
+        if (offset != null) 'offset': offset.toString(),
       }))
           .data ??
       {};
 }
+
+/// https://api-docs.igdb.com/#images
+enum ImageSize {
+  coverSmall('cover_small'),
+  screenshotMed('screenshot_med'),
+  coverBig('cover_big'),
+  logMed('logo_med'),
+  screenshotBig('screenshot_big'),
+  screenshotHuge('screenshot_huge'),
+  thumb('thumb'),
+  micro('micro'),
+  p720('720p'),
+  p1080('1080p'),
+  ;
+
+  const ImageSize(this.url);
+  final String url;
+}
+
+final imageSizesMap =
+    ImageSize.values.asMap().map((_, v) => MapEntry(v.url, v));
 
 enum QuizType {
   multipleChoice('mcq'),
