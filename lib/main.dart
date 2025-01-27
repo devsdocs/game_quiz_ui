@@ -1,120 +1,118 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_quiz/api.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-void main() {
-  runApp(const MainApp());
-}
+void main() => runApp(const ProviderScope(
+    child: MaterialApp(debugShowCheckedModeBanner: false, home: MyApp())));
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: RandomQuizBuilder(),
-      ),
-    );
-  }
-}
-
-class RandomQuizBuilder extends StatefulWidget {
-  const RandomQuizBuilder({super.key});
-
-  @override
-  RandomQuizBuilderState createState() => RandomQuizBuilderState();
-}
-
-class RandomQuizBuilderState extends State<RandomQuizBuilder> {
-  late Future<Map<String, dynamic>> _quizData;
-
-  @override
-  void initState() {
-    super.initState();
-    _quizData = _fetchQuizData();
-  }
-
-  // Method to fetch new quiz data
-  Future<Map<String, dynamic>> _fetchQuizData() {
-    return api.getRandom();
-  }
-
-  // Refresh function to re-fetch quiz data
-  void _refreshQuiz() {
-    setState(() {
-      _quizData = _fetchQuizData(); // Re-fetching the future
-    });
-  }
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, dynamic>>(
-      future: _quizData,
-      builder: (b, s) {
-        if (s.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (s.hasData) {
-          final res = s.data!;
-          if (res.isNotEmpty) {
-            if (res['result'] == 'ok') {
-              final data = (res['data'] as List)
-                  .map((d) => d as Map<String, dynamic>)
-                  .toList();
-
-              return Column(children: [
-                // Refresh button
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
-                    onPressed: _refreshQuiz, // Fetch new quiz data on refresh
-                    child: const Text('Refresh Questions'),
-                  ),
-                ),
-
-                // Quiz content
-                Expanded(
-                    child: ListView.builder(
+    return Scaffold(
+      appBar: AppBar(title: const Text('Quiz')),
+      body: Column(children: [
+        Consumer(
+          builder: (context, ref, child) {
+            return TextButton(
+                onPressed: () => ref.invalidate(randomQuizProvider),
+                child: const Text('Refresh'));
+          },
+        ),
+        Expanded(child: Consumer(builder: (context, ref, child) {
+          final quiz = ref.watch(randomQuizProvider);
+          return quiz.when(
+            skipLoadingOnRefresh: false,
+            skipLoadingOnReload: false,
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stackTrace) => Center(child: Text(error.toString())),
+            data: (result) {
+              if (result['status'] == 'ok') {
+                final data = result['data'] as List<dynamic>;
+                return ListView.builder(
                   itemCount: data.length,
-                  itemBuilder: (b, i) {
-                    return QuizResultWidget(questionData: data[i]);
+                  itemBuilder: (context, i) {
+                    final question = Question.fromJson(data[i]);
+                    return QuestionCard(question: question, questionIndex: i);
                   },
-                ))
-              ]);
-            }
-          }
-        } else if (s.hasError) {
-          return Center(child: Text('Error loading quiz: ${s.error}'));
-        }
-        return const Center(child: Text('No data available'));
-      },
+                );
+              }
+              return const Center(child: Text('Error'));
+            },
+          );
+        }))
+      ]),
     );
   }
 }
 
-class QuizResultWidget extends StatefulWidget {
-  final Map<String, dynamic> questionData;
+// State provider to manage the question states
+final questionStateProvider =
+    StateNotifierProvider.family<QuestionStateNotifier, QuestionState, int>(
+        (ref, index) => QuestionStateNotifier());
 
-  const QuizResultWidget({required this.questionData, super.key});
+class QuestionState {
+  final String? selectedOption;
+  final bool isAnswered;
+  final bool isCorrect;
 
-  @override
-  QuizResultWidgetState createState() => QuizResultWidgetState();
+  QuestionState({
+    this.selectedOption,
+    this.isAnswered = false,
+    this.isCorrect = false,
+  });
+
+  QuestionState copyWith({
+    String? selectedOption,
+    bool? isAnswered,
+    bool? isCorrect,
+  }) {
+    return QuestionState(
+      selectedOption: selectedOption ?? this.selectedOption,
+      isAnswered: isAnswered ?? this.isAnswered,
+      isCorrect: isCorrect ?? this.isCorrect,
+    );
+  }
 }
 
-class QuizResultWidgetState extends State<QuizResultWidget> {
-  String? selectedAnswer;
-  bool? isCorrect;
-  bool firstLoad = true;
-  late List<dynamic> options;
+class QuestionStateNotifier extends StateNotifier<QuestionState> {
+  QuestionStateNotifier() : super(QuestionState());
+
+  void selectOption(String option, String correctOption) {
+    if (!state.isAnswered) {
+      final isCorrect = option == correctOption;
+      state = state.copyWith(
+        selectedOption: option,
+        isAnswered: true,
+        isCorrect: isCorrect,
+      );
+    }
+  }
+}
+
+class QuestionCard extends StatelessWidget {
+  final Question question;
+  final int questionIndex;
+
+  const QuestionCard({
+    super.key,
+    required this.question,
+    required this.questionIndex,
+  });
+
+  bool _isImageUrl(String url) {
+    return url.startsWith('http://') || url.startsWith('https://');
+  }
 
   @override
   Widget build(BuildContext context) {
-    final question = widget.questionData['question'];
-    final correctAnswer = widget.questionData['option']['answer'];
-    final list = [correctAnswer, ...widget.questionData['option']['other']];
-    options = firstLoad ? (list..shuffle()) : options;
-    final imageUrl = widget.questionData['extra']; // Image URL from 'extra'
+    final options = [
+      ...question.incorrectOptions,
+      question.correctOption,
+    ]..shuffle();
 
     return Card(
       margin: const EdgeInsets.all(8.0),
@@ -123,56 +121,95 @@ class QuizResultWidgetState extends State<QuizResultWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Display the image if the URL is available
-            if (imageUrl != null && imageUrl.toString().isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: Image.network(
-                  imageUrl.toString(),
-                  errorBuilder: (_, error, __) => Text(
-                    error.toString(),
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red),
-                  ),
-                ),
-              ),
             Text(
-              question,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            // Interactive options for True/False or MCQ
-            Column(
-              children: options.map((option) {
-                return RadioListTile<String>(
-                  title: Text(option),
-                  value: option,
-                  groupValue: selectedAnswer,
-                  onChanged: (value) {
-                    setState(() {
-                      firstLoad = false;
-                      selectedAnswer = value;
-                      // Check if the answer is correct
-                      isCorrect = (selectedAnswer == correctAnswer);
-                    });
-                  },
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 10),
-            // Feedback for the user's selection
-            if (selectedAnswer != null)
-              Text(
-                isCorrect == true
-                    ? 'Correct!'
-                    : 'Incorrect. The correct answer is: $correctAnswer',
-                style: TextStyle(
-                  color: isCorrect == true ? Colors.green : Colors.red,
-                  fontWeight: FontWeight.bold,
-                ),
+              question.question,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
+            ),
+            const SizedBox(height: 10),
+            if (question.extraType == 'image_url')
+              CachedNetworkImage(
+                imageUrl: question.extraContent,
+                progressIndicatorBuilder: (context, url, downloadProgress) =>
+                    SizedBox(
+                  height: 250,
+                  width: 250,
+                  child: CircularProgressIndicator(
+                      value: downloadProgress.progress),
+                ),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
+                fit: BoxFit.scaleDown,
+                height: 250,
+              )
+            else
+              Text(question.extraContent),
+            const SizedBox(height: 10),
+            Consumer(builder: (context, ref, child) {
+              final questionState =
+                  ref.watch(questionStateProvider(questionIndex));
+              final questionNotifier =
+                  ref.read(questionStateProvider(questionIndex).notifier);
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: options.map((option) {
+                  final isSelected = questionState.selectedOption == option;
+                  final isCorrect = questionState.isCorrect && isSelected;
+                  final isDisabled = questionState.isAnswered;
+
+                  return GestureDetector(
+                    onTap: isDisabled
+                        ? null
+                        : () => questionNotifier.selectOption(
+                            option, question.correctOption),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 8.0),
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? (isCorrect ? Colors.green : Colors.red)
+                            : Colors.white,
+                        border: Border.all(
+                          color: isSelected
+                              ? (isCorrect ? Colors.green : Colors.red)
+                              : Colors.grey,
+                          width: 2.0,
+                        ),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: _isImageUrl(option)
+                          ? CachedNetworkImage(
+                              imageUrl: option,
+                              progressIndicatorBuilder:
+                                  (context, url, downloadProgress) => SizedBox(
+                                height: 150,
+                                width: 150,
+                                child: CircularProgressIndicator(
+                                    value: downloadProgress.progress),
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
+                              fit: BoxFit.cover,
+                              height: 150,
+                            )
+                          : Text(
+                              option,
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.black,
+                              ),
+                            ),
+                    ),
+                  );
+                }).toList(),
+              );
+            }),
+            const SizedBox(height: 10),
+            TextButton(
+              onPressed: () async =>
+                  await launchUrl(Uri.parse(question.reference.first)),
+              child: const Text('Reference'),
+            ),
           ],
         ),
       ),
