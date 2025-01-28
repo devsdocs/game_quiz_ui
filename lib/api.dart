@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:game_quiz/main.dart';
 
 const _base = 'game-quiz.p.rapidapi.com';
 
@@ -24,14 +25,14 @@ class _Api {
       );
 
   Future<Map<String, dynamic>> getRandom({
-    int? amount,
+    int amount = 10,
     // QuizType? type,
     // String? session,
     ImageSize? imageSize,
   }) async =>
       (await _get('/quiz/random', {
         // if (type != null) 'type': type.val,
-        if (amount != null) 'amount': amount.toString(),
+        'amount': amount.toString(),
         // if (session != null) 'session': session,
         if (imageSize != null) 'image_size': imageSize.url
       }))
@@ -44,11 +45,29 @@ class _Api {
     ImageSize? imageSize,
     // int? limit = 10,
     // int? offset = 0,
-    int? amount = 0,
+    int amount = 10,
   }) async =>
       (await _get('/quiz/game/$gameId', {
         // if (type != null) 'type': type.val,
-        if (amount != null) 'amount': amount.toString(),
+        'amount': amount.toString(),
+        if (imageSize != null) 'image_size': imageSize.url,
+        // if (limit != null) 'limit': limit.toString(),
+        // if (offset != null) 'offset': offset.toString(),
+      }))
+          .data ??
+      {};
+
+  Future<Map<String, dynamic>> getId(
+    String id, {
+    // QuizType? type,
+    ImageSize? imageSize,
+    // int? limit = 10,
+    // int? offset = 0,
+    int amount = 10,
+  }) async =>
+      (await _get('/quiz/id/$id', {
+        // if (type != null) 'type': type.val,
+        'amount': amount.toString(),
         if (imageSize != null) 'image_size': imageSize.url,
         // if (limit != null) 'limit': limit.toString(),
         // if (offset != null) 'offset': offset.toString(),
@@ -89,17 +108,58 @@ enum QuizType {
   final String val;
 }
 
-// Riverpod api future provider to get random quiz
-final randomQuizProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+class FetchParams {
+  final int? _intParam;
+  final String? _stringParam;
+
+  FetchParams({int? intParam, String? stringParam})
+      : _intParam = (intParam != null && stringParam == null) ? intParam : null,
+        _stringParam =
+            (stringParam != null && intParam == null) ? stringParam : null;
+
+  bool get isRandom => (_intParam == null && _stringParam == null);
+
+  @override
+  String toString() {
+    return 'FetchParams{intParam: $_intParam, stringParam: $_stringParam}';
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FetchParams &&
+          runtimeType == other.runtimeType &&
+          _intParam == other._intParam &&
+          _stringParam == other._stringParam;
+
+  @override
+  int get hashCode => _intParam.hashCode ^ _stringParam.hashCode;
+}
+
+final inputTextProvider = StateProvider<String>((ref) => '');
+
+// State provider to manage the question states
+final questionStateProvider =
+    StateNotifierProvider.family<QuestionStateNotifier, QuestionState, int>(
+        (ref, index) => QuestionStateNotifier());
+
+final quizApiProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final api = ref.read(apiProvider);
-  return api.getRandom();
+  final params = ref.watch(fetchParamsProvider);
+
+  if (params.isRandom) {
+    return api.getRandom();
+  }
+
+  if (params._stringParam != null) {
+    return api.getId(params._stringParam);
+  }
+
+  return api.getGameId(params._intParam!);
 });
 
-// Riverpod api future provider to get game id
-final gameQuizProvider =
-    FutureProvider.family<Map<String, dynamic>, int>((ref, int gameId) async {
-  final api = ref.read(apiProvider);
-  return api.getGameId(gameId);
+final fetchParamsProvider = StateProvider<FetchParams>((ref) {
+  return FetchParams();
 });
 
 final apiProvider = Provider<_Api>((ref) => _Api(ref.read(keyProvider)));
@@ -145,5 +205,28 @@ class Question {
       isUrl: json['options']['is_url'],
       reference: List<String>.from(json['reference']),
     );
+  }
+
+  Question copyWith({
+    String? id,
+    String? categoryId,
+    String? question,
+    List<String>? incorrectOptions,
+    List<String>? reference,
+    String? correctOption,
+    String? extraContent,
+    String? extraType,
+    bool? isUrl,
+  }) {
+    return Question(
+        id: id ?? this.id,
+        categoryId: categoryId ?? this.categoryId,
+        question: question ?? this.question,
+        incorrectOptions: incorrectOptions ?? this.incorrectOptions,
+        reference: reference ?? this.reference,
+        correctOption: correctOption ?? this.correctOption,
+        extraContent: extraContent ?? this.extraContent,
+        extraType: extraType ?? this.extraType,
+        isUrl: isUrl ?? this.isUrl);
   }
 }

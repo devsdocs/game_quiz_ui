@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_quiz/api.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,17 +14,114 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Quiz')),
+      appBar: AppBar(
+        title: const Text('Gaming Quiz'),
+        centerTitle: true,
+      ),
       body: Column(children: [
-        Consumer(
-          builder: (context, ref, child) {
-            return TextButton(
-                onPressed: () => ref.invalidate(randomQuizProvider),
-                child: const Text('Refresh'));
-          },
+        Row(
+          children: [
+            Consumer(
+              builder: (context, ref, child) {
+                return TextButton(
+                    onPressed: () {
+                      ref.invalidate(questionStateProvider);
+                      ref.read(fetchParamsProvider.notifier).state =
+                          FetchParams();
+                      ref.invalidate(quizApiProvider);
+                    },
+                    child: const Text('Random'));
+              },
+            ),
+            TextButton(
+                onPressed: () async {
+                  await showDialog(
+                    context: context,
+                    builder: (context) {
+                      return Consumer(
+                        builder: (context, ref, child) {
+                          return AlertDialog(
+                            title:
+                                const Text('Enter Question ID or Category ID'),
+                            content: TextField(
+                              onChanged: (value) {
+                                ref.read(inputTextProvider.notifier).state =
+                                    value;
+                              },
+                              decoration: const InputDecoration(
+                                hintText: 'Question ID or Category ID',
+                              ),
+                              keyboardType: TextInputType.text,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  ref.invalidate(questionStateProvider);
+                                  Navigator.of(context).pop();
+                                  final text = ref.read(inputTextProvider);
+                                  ref.read(fetchParamsProvider.notifier).state =
+                                      FetchParams(stringParam: text);
+                                  ref.invalidate(inputTextProvider);
+                                  ref.invalidate(quizApiProvider);
+                                },
+                                child: const Text('Submit'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+                child: const Text('ID')),
+            TextButton(
+                onPressed: () async {
+                  await showDialog(
+                    context: context,
+                    builder: (context) {
+                      return Consumer(
+                        builder: (context, ref, child) {
+                          return AlertDialog(
+                            title: const Text('Enter IGDB Game ID'),
+                            content: TextField(
+                              onChanged: (value) {
+                                ref.read(inputTextProvider.notifier).state =
+                                    value;
+                              },
+                              decoration: const InputDecoration(
+                                hintText: 'IGDB Game ID',
+                              ),
+                              keyboardType: TextInputType.number,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  final text = ref.read(inputTextProvider);
+                                  final tryParse = int.tryParse(text);
+                                  if (tryParse == null) {
+                                    return;
+                                  }
+                                  ref.invalidate(questionStateProvider);
+                                  Navigator.of(context).pop();
+                                  ref.read(fetchParamsProvider.notifier).state =
+                                      FetchParams(intParam: tryParse);
+                                  ref.invalidate(inputTextProvider);
+                                  ref.invalidate(quizApiProvider);
+                                },
+                                child: const Text('Submit'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+                child: const Text('Game ID')),
+          ],
         ),
         Expanded(child: Consumer(builder: (context, ref, child) {
-          final quiz = ref.watch(randomQuizProvider);
+          final quiz = ref.watch(quizApiProvider);
           return quiz.when(
             skipLoadingOnRefresh: false,
             skipLoadingOnReload: false,
@@ -36,7 +134,14 @@ class MyApp extends StatelessWidget {
                   itemCount: data.length,
                   itemBuilder: (context, i) {
                     final question = Question.fromJson(data[i]);
-                    return QuestionCard(question: question, questionIndex: i);
+                    return QuestionCard(
+                      question: question,
+                      questionIndex: i,
+                      options: [
+                        ...question.incorrectOptions,
+                        question.correctOption,
+                      ]..shuffle(),
+                    );
                   },
                 );
               }
@@ -48,11 +153,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-// State provider to manage the question states
-final questionStateProvider =
-    StateNotifierProvider.family<QuestionStateNotifier, QuestionState, int>(
-        (ref, index) => QuestionStateNotifier());
 
 class QuestionState {
   final String? selectedOption;
@@ -96,10 +196,12 @@ class QuestionStateNotifier extends StateNotifier<QuestionState> {
 class QuestionCard extends StatelessWidget {
   final Question question;
   final int questionIndex;
+  final List<String> options;
 
   const QuestionCard({
     super.key,
     required this.question,
+    required this.options,
     required this.questionIndex,
   });
 
@@ -109,11 +211,6 @@ class QuestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final options = [
-      ...question.incorrectOptions,
-      question.correctOption,
-    ]..shuffle();
-
     return Card(
       margin: const EdgeInsets.all(8.0),
       child: Padding(
@@ -155,7 +252,8 @@ class QuestionCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: options.map((option) {
                   final isSelected = questionState.selectedOption == option;
-                  final isCorrect = questionState.isCorrect && isSelected;
+                  final isThisCorrectOption = option == question.correctOption;
+                  final isCorrect = questionState.isCorrect;
                   final isDisabled = questionState.isAnswered;
 
                   return GestureDetector(
@@ -167,12 +265,28 @@ class QuestionCard extends StatelessWidget {
                       margin: const EdgeInsets.symmetric(vertical: 8.0),
                       padding: const EdgeInsets.all(8.0),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? (isCorrect ? Colors.green : Colors.red)
+                        color: isDisabled
+                            ? isCorrect
+                                ? isThisCorrectOption
+                                    ? Colors.green
+                                    : Colors.white
+                                : isThisCorrectOption
+                                    ? Colors.green
+                                    : isSelected
+                                        ? Colors.red
+                                        : Colors.white
                             : Colors.white,
                         border: Border.all(
-                          color: isSelected
-                              ? (isCorrect ? Colors.green : Colors.red)
+                          color: isDisabled
+                              ? isCorrect
+                                  ? isThisCorrectOption
+                                      ? Colors.green
+                                      : Colors.grey
+                                  : isThisCorrectOption
+                                      ? Colors.green
+                                      : isSelected
+                                          ? Colors.red
+                                          : Colors.grey
                               : Colors.grey,
                           width: 2.0,
                         ),
@@ -205,10 +319,24 @@ class QuestionCard extends StatelessWidget {
               );
             }),
             const SizedBox(height: 10),
-            TextButton(
-              onPressed: () async =>
-                  await launchUrl(Uri.parse(question.reference.first)),
-              child: const Text('Reference'),
+            Row(
+              children: [
+                TextButton(
+                  onPressed: () async =>
+                      await launchUrl(Uri.parse(question.reference.first)),
+                  child: const Text('Reference'),
+                ),
+                TextButton(
+                  onPressed: () async =>
+                      await Clipboard.setData(ClipboardData(text: question.id)),
+                  child: Text('Question ID: ${question.id}'),
+                ),
+                TextButton(
+                  onPressed: () async => await Clipboard.setData(
+                      ClipboardData(text: question.categoryId)),
+                  child: Text('Category ID: ${question.categoryId}'),
+                ),
+              ],
             ),
           ],
         ),
