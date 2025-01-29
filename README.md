@@ -1,5 +1,3 @@
-# Basic quiz app utilize Game Quiz API
+# Basic quiz app utilize Gaming Quiz API
 
-The API available at https://rapidapi.com/devsdocs/api/game-quiz
-
-Use your own RAPID_API_KEY at lib/api.dart
+Gaming Quiz API available at https://rapidapi.com/devsdocs/api/game-quiz

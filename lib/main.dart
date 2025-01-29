@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_quiz/api.dart';
+import 'package:game_quiz/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 void main() => runApp(const ProviderScope(
@@ -14,143 +15,207 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gaming Quiz'),
-        centerTitle: true,
-      ),
-      body: Column(children: [
-        Row(
-          children: [
-            Consumer(
-              builder: (context, ref, child) {
-                return TextButton(
-                    onPressed: () {
-                      ref.invalidate(questionStateProvider);
-                      ref.read(fetchParamsProvider.notifier).state =
-                          FetchParams();
-                      ref.invalidate(quizApiProvider);
-                    },
-                    child: const Text('Random'));
-              },
-            ),
-            TextButton(
-                onPressed: () async {
-                  await showDialog(
-                    context: context,
-                    builder: (context) {
-                      return Consumer(
-                        builder: (context, ref, child) {
-                          return AlertDialog(
-                            title:
-                                const Text('Enter Question ID or Category ID'),
-                            content: TextField(
-                              onChanged: (value) {
-                                ref.read(inputTextProvider.notifier).state =
-                                    value;
-                              },
-                              decoration: const InputDecoration(
-                                hintText: 'Question ID or Category ID',
-                              ),
-                              keyboardType: TextInputType.text,
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  ref.invalidate(questionStateProvider);
-                                  Navigator.of(context).pop();
-                                  final text = ref.read(inputTextProvider);
-                                  ref.read(fetchParamsProvider.notifier).state =
-                                      FetchParams(stringParam: text);
-                                  ref.invalidate(inputTextProvider);
-                                  ref.invalidate(quizApiProvider);
-                                },
-                                child: const Text('Submit'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-                child: const Text('ID')),
-            TextButton(
-                onPressed: () async {
-                  await showDialog(
-                    context: context,
-                    builder: (context) {
-                      return Consumer(
-                        builder: (context, ref, child) {
-                          return AlertDialog(
-                            title: const Text('Enter IGDB Game ID'),
-                            content: TextField(
-                              onChanged: (value) {
-                                ref.read(inputTextProvider.notifier).state =
-                                    value;
-                              },
-                              decoration: const InputDecoration(
-                                hintText: 'IGDB Game ID',
-                              ),
-                              keyboardType: TextInputType.number,
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  final text = ref.read(inputTextProvider);
-                                  final tryParse = int.tryParse(text);
-                                  if (tryParse == null) {
-                                    return;
-                                  }
-                                  ref.invalidate(questionStateProvider);
-                                  Navigator.of(context).pop();
-                                  ref.read(fetchParamsProvider.notifier).state =
-                                      FetchParams(intParam: tryParse);
-                                  ref.invalidate(inputTextProvider);
-                                  ref.invalidate(quizApiProvider);
-                                },
-                                child: const Text('Submit'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-                child: const Text('Game ID')),
-          ],
+        appBar: AppBar(
+          title: const Text('Gaming Quiz'),
+          centerTitle: true,
         ),
-        Expanded(child: Consumer(builder: (context, ref, child) {
-          final quiz = ref.watch(quizApiProvider);
-          return quiz.when(
-            skipLoadingOnRefresh: false,
-            skipLoadingOnReload: false,
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, stackTrace) => Center(child: Text(error.toString())),
-            data: (result) {
-              if (result['status'] == 'ok') {
-                final data = result['data'] as List<dynamic>;
-                return ListView.builder(
-                  itemCount: data.length,
-                  itemBuilder: (context, i) {
-                    final question = Question.fromJson(data[i]);
-                    return QuestionCard(
-                      question: question,
-                      questionIndex: i,
-                      options: [
-                        ...question.incorrectOptions,
-                        question.correctOption,
-                      ]..shuffle(),
+        body: Consumer(
+          builder: (context, ref, child) {
+            final key = ref.watch(keyProvider);
+            if (key.isEmpty) {
+              return Center(
+                child: TextButton(
+                  onPressed: () async {
+                    await showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Enter Rapid API Key'),
+                          content: TextField(
+                            onChanged: (value) {
+                              ref.read(inputTextProvider.notifier).state =
+                                  value;
+                            },
+                            decoration: const InputDecoration(
+                              hintText: 'Enter Rapid API Key',
+                            ),
+                            keyboardType: TextInputType.text,
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () async {
+                                final text = ref.read(inputTextProvider);
+                                final api = Api(text);
+                                final test = await api.testKey();
+
+                                if (!test) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(const SnackBar(
+                                      content: Text('Invalid API Key'),
+                                    ));
+                                  }
+                                  return;
+                                }
+                                if (context.mounted) {
+                                  Navigator.of(context).pop();
+                                }
+                                ref.read(keyProvider.notifier).state = text;
+                                ref.invalidate(inputTextProvider);
+                              },
+                              child: const Text('Submit'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: const Text('Enter API Key'),
+                ),
+              );
+            }
+            return const ApiView();
+          },
+        ));
+  }
+}
+
+class ApiView extends StatelessWidget {
+  const ApiView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [
+      Row(
+        children: [
+          Consumer(
+            builder: (context, ref, child) {
+              return TextButton(
+                  onPressed: () {
+                    ref.invalidate(questionStateProvider);
+                    ref.read(fetchParamsProvider.notifier).state =
+                        FetchParams();
+                    ref.invalidate(quizApiProvider);
+                  },
+                  child: const Text('Random'));
+            },
+          ),
+          TextButton(
+              onPressed: () async {
+                await showDialog(
+                  context: context,
+                  builder: (context) {
+                    return Consumer(
+                      builder: (context, ref, child) {
+                        return AlertDialog(
+                          title: const Text('Enter Question ID or Category ID'),
+                          content: TextField(
+                            onChanged: (value) {
+                              ref.read(inputTextProvider.notifier).state =
+                                  value;
+                            },
+                            decoration: const InputDecoration(
+                              hintText: 'Question ID or Category ID',
+                            ),
+                            keyboardType: TextInputType.text,
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                ref.invalidate(questionStateProvider);
+                                Navigator.of(context).pop();
+                                final text = ref.read(inputTextProvider);
+                                ref.read(fetchParamsProvider.notifier).state =
+                                    FetchParams(stringParam: text);
+                                ref.invalidate(inputTextProvider);
+                                ref.invalidate(quizApiProvider);
+                              },
+                              child: const Text('Submit'),
+                            ),
+                          ],
+                        );
+                      },
                     );
                   },
                 );
-              }
-              return const Center(child: Text('Error'));
-            },
-          );
-        }))
-      ]),
-    );
+              },
+              child: const Text('ID')),
+          TextButton(
+              onPressed: () async {
+                await showDialog(
+                  context: context,
+                  builder: (context) {
+                    return Consumer(
+                      builder: (context, ref, child) {
+                        return AlertDialog(
+                          title: const Text('Enter IGDB Game ID'),
+                          content: TextField(
+                            onChanged: (value) {
+                              ref.read(inputTextProvider.notifier).state =
+                                  value;
+                            },
+                            decoration: const InputDecoration(
+                              hintText: 'IGDB Game ID',
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                final text = ref.read(inputTextProvider);
+                                final tryParse = int.tryParse(text);
+                                if (tryParse == null) {
+                                  return;
+                                }
+                                ref.invalidate(questionStateProvider);
+                                Navigator.of(context).pop();
+                                ref.read(fetchParamsProvider.notifier).state =
+                                    FetchParams(intParam: tryParse);
+                                ref.invalidate(inputTextProvider);
+                                ref.invalidate(quizApiProvider);
+                              },
+                              child: const Text('Submit'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+              child: const Text('Game ID')),
+        ],
+      ),
+      Expanded(child: Consumer(builder: (context, ref, child) {
+        final quiz = ref.watch(quizApiProvider);
+        return quiz.when(
+          skipLoadingOnRefresh: false,
+          skipLoadingOnReload: false,
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stackTrace) => Center(child: Text(error.toString())),
+          data: (result) {
+            if (result['status'] == 'ok') {
+              final data = result['data'] as List<dynamic>;
+              return ListView.builder(
+                itemCount: data.length,
+                itemBuilder: (context, i) {
+                  final question = Question.fromJson(data[i]);
+                  return QuestionCard(
+                    question: question,
+                    questionIndex: i,
+                    options: [
+                      ...question.incorrectOptions,
+                      question.correctOption,
+                    ]..shuffle(),
+                  );
+                },
+              );
+            }
+            return const Center(child: Text('Error'));
+          },
+        );
+      }))
+    ]);
   }
 }
 

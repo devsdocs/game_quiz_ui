@@ -1,15 +1,11 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:game_quiz/main.dart';
 
 const _base = 'game-quiz.p.rapidapi.com';
 
 final _dio = Dio();
 
-class _Api {
-  _Api(this.key);
+class Api {
+  Api(this.key);
   final String key;
 
   Future<Response<Map<String, dynamic>>> _get(String path,
@@ -23,6 +19,15 @@ class _Api {
           },
         ),
       );
+
+  Future<bool> testKey() async {
+    try {
+      await getRandom(amount: 1);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 
   Future<Map<String, dynamic>> getRandom({
     int amount = 10,
@@ -119,19 +124,19 @@ enum QuizType {
 }
 
 class FetchParams {
-  final int? _intParam;
-  final String? _stringParam;
+  final int? intParam;
+  final String? stringParam;
 
   FetchParams({int? intParam, String? stringParam})
-      : _intParam = (intParam != null && stringParam == null) ? intParam : null,
-        _stringParam =
+      : intParam = (intParam != null && stringParam == null) ? intParam : null,
+        stringParam =
             (stringParam != null && intParam == null) ? stringParam : null;
 
-  bool get isRandom => (_intParam == null && _stringParam == null);
+  bool get isRandom => (intParam == null && stringParam == null);
 
   @override
   String toString() {
-    return 'FetchParams{intParam: $_intParam, stringParam: $_stringParam}';
+    return 'FetchParams{intParam: $intParam, stringParam: $stringParam}';
   }
 
   @override
@@ -139,46 +144,12 @@ class FetchParams {
       identical(this, other) ||
       other is FetchParams &&
           runtimeType == other.runtimeType &&
-          _intParam == other._intParam &&
-          _stringParam == other._stringParam;
+          intParam == other.intParam &&
+          stringParam == other.stringParam;
 
   @override
-  int get hashCode => _intParam.hashCode ^ _stringParam.hashCode;
+  int get hashCode => intParam.hashCode ^ stringParam.hashCode;
 }
-
-final inputTextProvider = StateProvider<String>((ref) => '');
-
-// State provider to manage the question states
-final questionStateProvider =
-    StateNotifierProvider.family<QuestionStateNotifier, QuestionState, int>(
-        (ref, index) => QuestionStateNotifier());
-
-final quizApiProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final api = ref.read(apiProvider);
-  final params = ref.watch(fetchParamsProvider);
-
-  if (params.isRandom) {
-    return api.getRandom();
-  }
-
-  if (params._stringParam != null) {
-    return api.getId(params._stringParam);
-  }
-
-  return api.getGameId(params._intParam!);
-});
-
-final fetchParamsProvider = StateProvider<FetchParams>((ref) {
-  return FetchParams();
-});
-
-final apiProvider = Provider<_Api>((ref) => _Api(ref.read(keyProvider)));
-
-final keyProvider =
-    Provider<String>((ref) => ref.read(envProvider)['RAPID_API_KEY']!);
-
-final envProvider =
-    Provider<Map<String, String>>((ref) => Platform.environment);
 
 class Question {
   final String id;
