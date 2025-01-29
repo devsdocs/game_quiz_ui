@@ -79,15 +79,25 @@ class _Api {
 /// https://api-docs.igdb.com/#images
 enum ImageSize {
   coverSmall('cover_small'),
+  coverSmallRetina('cover_small_retina'),
   screenshotMed('screenshot_med'),
+  screenshotMedRetina('screenshot_med_retina'),
   coverBig('cover_big'),
+  coverBigRetina('cover_big_retina'),
   logMed('logo_med'),
+  logMedRetina('logo_med_retina'),
   screenshotBig('screenshot_big'),
+  screenshotBigRetina('screenshot_big_retina'),
   screenshotHuge('screenshot_huge'),
+  screenshotHugeRetina('screenshot_huge_retina'),
   thumb('thumb'),
+  thumbRetina('thumb_retina'),
   micro('micro'),
+  microRetina('micro_retina'),
   p720('720p'),
+  p720Retina('720p_retina'),
   p1080('1080p'),
+  p1080Retina('1080p_retina'),
   ;
 
   const ImageSize(this.url);
