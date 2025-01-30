@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_quiz/api.dart';
-import 'package:game_quiz/main.dart';
+import 'package:game_quiz/model.dart';
 
 final inputTextProvider = StateProvider<String>((ref) => '');
 
@@ -31,3 +31,18 @@ final fetchParamsProvider = StateProvider<FetchParams>((ref) {
 final apiProvider = Provider<Api>((ref) => Api(ref.read(keyProvider)));
 
 final keyProvider = StateProvider<String>((ref) => '');
+
+class QuestionStateNotifier extends StateNotifier<QuestionState> {
+  QuestionStateNotifier() : super(QuestionState());
+
+  void selectOption(String option, String correctOption) {
+    if (!state.isAnswered) {
+      final isCorrect = option == correctOption;
+      state = state.copyWith(
+        selectedOption: option,
+        isAnswered: true,
+        isCorrect: isCorrect,
+      );
+    }
+  }
+}

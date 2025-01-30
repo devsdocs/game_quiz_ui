@@ -7,10 +7,10 @@ import 'package:game_quiz/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 void main() => runApp(const ProviderScope(
-    child: MaterialApp(debugShowCheckedModeBanner: false, home: MyApp())));
+    child: MaterialApp(debugShowCheckedModeBanner: false, home: MainView())));
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MainView extends StatelessWidget {
+  const MainView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,53 +24,65 @@ class MyApp extends StatelessWidget {
             final key = ref.watch(keyProvider);
             if (key.isEmpty) {
               return Center(
-                child: TextButton(
-                  onPressed: () async {
-                    await showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text('Enter Rapid API Key'),
-                          content: TextField(
-                            onChanged: (value) {
-                              ref.read(inputTextProvider.notifier).state =
-                                  value;
-                            },
-                            decoration: const InputDecoration(
-                              hintText: 'Enter Rapid API Key',
-                            ),
-                            keyboardType: TextInputType.text,
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () async {
-                                final text = ref.read(inputTextProvider);
-                                final api = Api(text);
-                                final test = await api.testKey();
+                child: Wrap(
+                  direction: Axis.vertical,
+                  children: [
+                    TextButton(
+                      onPressed: () async {
+                        await showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text('Enter Rapid API Key'),
+                              content: TextField(
+                                onChanged: (value) {
+                                  ref.read(inputTextProvider.notifier).state =
+                                      value;
+                                },
+                                decoration: const InputDecoration(
+                                  hintText: 'Enter Rapid API Key',
+                                ),
+                                keyboardType: TextInputType.text,
+                              ),
+                              actions: [
+                                TextButton.icon(
+                                  onPressed: () async => await launchUrl(Uri.parse(
+                                      'https://rapidapi.com/devsdocs/api/game-quiz')),
+                                  label: const Text('Get API Key'),
+                                  iconAlignment: IconAlignment.end,
+                                  icon: const Icon(Icons.open_in_new),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    final text = ref.read(inputTextProvider);
+                                    final api = Api(text);
+                                    final test = await api.testKey();
 
-                                if (!test) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(const SnackBar(
-                                      content: Text('Invalid API Key'),
-                                    ));
-                                  }
-                                  return;
-                                }
-                                if (context.mounted) {
-                                  Navigator.of(context).pop();
-                                }
-                                ref.read(keyProvider.notifier).state = text;
-                                ref.invalidate(inputTextProvider);
-                              },
-                              child: const Text('Submit'),
-                            ),
-                          ],
+                                    if (!test) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(const SnackBar(
+                                          content: Text('Invalid API Key'),
+                                        ));
+                                      }
+                                      return;
+                                    }
+                                    if (context.mounted) {
+                                      Navigator.of(context).pop();
+                                    }
+                                    ref.read(keyProvider.notifier).state = text;
+                                    ref.invalidate(inputTextProvider);
+                                  },
+                                  child: const Text('Submit'),
+                                ),
+                              ],
+                            );
+                          },
                         );
                       },
-                    );
-                  },
-                  child: const Text('Enter API Key'),
+                      child: const Text('Enter API Key'),
+                    ),
+                  ],
                 ),
               );
             }
@@ -86,7 +98,7 @@ class ApiView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      Row(
+      Wrap(
         children: [
           Consumer(
             builder: (context, ref, child) {
@@ -219,45 +231,6 @@ class ApiView extends StatelessWidget {
   }
 }
 
-class QuestionState {
-  final String? selectedOption;
-  final bool isAnswered;
-  final bool isCorrect;
-
-  QuestionState({
-    this.selectedOption,
-    this.isAnswered = false,
-    this.isCorrect = false,
-  });
-
-  QuestionState copyWith({
-    String? selectedOption,
-    bool? isAnswered,
-    bool? isCorrect,
-  }) {
-    return QuestionState(
-      selectedOption: selectedOption ?? this.selectedOption,
-      isAnswered: isAnswered ?? this.isAnswered,
-      isCorrect: isCorrect ?? this.isCorrect,
-    );
-  }
-}
-
-class QuestionStateNotifier extends StateNotifier<QuestionState> {
-  QuestionStateNotifier() : super(QuestionState());
-
-  void selectOption(String option, String correctOption) {
-    if (!state.isAnswered) {
-      final isCorrect = option == correctOption;
-      state = state.copyWith(
-        selectedOption: option,
-        isAnswered: true,
-        isCorrect: isCorrect,
-      );
-    }
-  }
-}
-
 class QuestionCard extends StatelessWidget {
   final Question question;
   final int questionIndex;
@@ -313,8 +286,9 @@ class QuestionCard extends StatelessWidget {
                   ref.watch(questionStateProvider(questionIndex));
               final questionNotifier =
                   ref.read(questionStateProvider(questionIndex).notifier);
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              return Wrap(
+                spacing: 10,
+                crossAxisAlignment: WrapCrossAlignment.start,
                 children: options.map((option) {
                   final isSelected = questionState.selectedOption == option;
                   final isThisCorrectOption = option == question.correctOption;
@@ -384,22 +358,28 @@ class QuestionCard extends StatelessWidget {
               );
             }),
             const SizedBox(height: 10),
-            Row(
+            Wrap(
               children: [
-                TextButton(
+                TextButton.icon(
                   onPressed: () async =>
                       await launchUrl(Uri.parse(question.reference.first)),
-                  child: const Text('Reference'),
+                  icon: const Icon(Icons.open_in_new),
+                  iconAlignment: IconAlignment.end,
+                  label: const Text('Reference'),
                 ),
-                TextButton(
+                TextButton.icon(
                   onPressed: () async =>
                       await Clipboard.setData(ClipboardData(text: question.id)),
-                  child: Text('Question ID: ${question.id}'),
+                  label: Text('Question ID: ${question.id}'),
+                  icon: const Icon(Icons.copy),
+                  iconAlignment: IconAlignment.end,
                 ),
-                TextButton(
+                TextButton.icon(
                   onPressed: () async => await Clipboard.setData(
                       ClipboardData(text: question.categoryId)),
-                  child: Text('Category ID: ${question.categoryId}'),
+                  label: Text('Category ID: ${question.categoryId}'),
+                  icon: const Icon(Icons.copy),
+                  iconAlignment: IconAlignment.end,
                 ),
               ],
             ),
