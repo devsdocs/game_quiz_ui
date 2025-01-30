@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_quiz/api.dart';
 import 'package:game_quiz/model.dart';
@@ -24,11 +26,11 @@ final quizApiProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   return api.getGameId(params.intParam!);
 });
 
-final fetchParamsProvider = StateProvider<FetchParams>((ref) {
-  return FetchParams();
-});
+final fetchParamsProvider = StateProvider<FetchParams>((ref) => FetchParams());
 
 final apiProvider = Provider<Api>((ref) => Api(ref.read(keyProvider)));
+
+final randomProvider = Provider<Random>((ref) => Random());
 
 final keyProvider = StateProvider<String>((ref) => '');
 

@@ -218,7 +218,7 @@ class ApiView extends StatelessWidget {
                     options: [
                       ...question.incorrectOptions,
                       question.correctOption,
-                    ]..shuffle(),
+                    ]..shuffle(ref.watch(randomProvider)),
                   );
                 },
               );
