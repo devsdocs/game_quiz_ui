@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:game_quiz/api.dart';
+import 'package:game_quiz/model.dart';
 import 'package:game_quiz/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -40,7 +41,7 @@ class MainView extends StatelessWidget {
                                       value;
                                 },
                                 decoration: const InputDecoration(
-                                  hintText: 'Enter Rapid API Key',
+                                  hintText: 'X-RapidAPI-Key',
                                 ),
                                 keyboardType: TextInputType.text,
                               ),
