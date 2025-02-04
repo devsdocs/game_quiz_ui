@@ -16,6 +16,9 @@ final quizApiProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final params = ref.watch(fetchParamsProvider);
 
   if (params.isRandom) {
+    if (params.isTrending) {
+      return api.getRandomTrending();
+    }
     return api.getRandom();
   }
 

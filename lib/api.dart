@@ -44,6 +44,21 @@ class Api {
           .data ??
       {};
 
+  Future<Map<String, dynamic>> getRandomTrending({
+    int amount = 10,
+    // QuizType? type,
+    // String? session,
+    ImageSize? imageSize,
+  }) async =>
+      (await _get('/quiz/trending', {
+        // if (type != null) 'type': type.val,
+        'amount': amount.toString(),
+        // if (session != null) 'session': session,
+        if (imageSize != null) 'image_size': imageSize.url
+      }))
+          .data ??
+      {};
+
   Future<Map<String, dynamic>> getGameId(
     int gameId, {
     // QuizType? type,
@@ -126,9 +141,13 @@ enum QuizType {
 class FetchParams {
   final int? intParam;
   final String? stringParam;
+  final bool isTrending;
 
-  FetchParams({int? intParam, String? stringParam})
-      : intParam = (intParam != null && stringParam == null) ? intParam : null,
+  FetchParams({
+    int? intParam,
+    String? stringParam,
+    this.isTrending = false,
+  })  : intParam = (intParam != null && stringParam == null) ? intParam : null,
         stringParam =
             (stringParam != null && intParam == null) ? stringParam : null;
 

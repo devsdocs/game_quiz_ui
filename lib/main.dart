@@ -112,6 +112,18 @@ class ApiView extends StatelessWidget {
                   child: const Text('Random'));
             },
           ),
+          Consumer(
+            builder: (context, ref, child) {
+              return TextButton(
+                  onPressed: () {
+                    ref.invalidate(questionStateProvider);
+                    ref.read(fetchParamsProvider.notifier).state =
+                        FetchParams(isTrending: true);
+                    ref.invalidate(quizApiProvider);
+                  },
+                  child: const Text('Trending'));
+            },
+          ),
           TextButton(
               onPressed: () async {
                 await showDialog(
