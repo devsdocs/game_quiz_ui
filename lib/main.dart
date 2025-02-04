@@ -34,7 +34,8 @@ class MainView extends StatelessWidget {
                           context: context,
                           builder: (context) {
                             return AlertDialog(
-                              title: const Text('Enter Rapid API Key'),
+                              scrollable: true,
+                              title: const Text('Enter RapidAPI key'),
                               content: TextField(
                                 onChanged: (value) {
                                   ref.read(inputTextProvider.notifier).state =
@@ -46,35 +47,51 @@ class MainView extends StatelessWidget {
                                 keyboardType: TextInputType.text,
                               ),
                               actions: [
-                                TextButton.icon(
-                                  onPressed: () async => await launchUrl(Uri.parse(
-                                      'https://rapidapi.com/devsdocs/api/game-quiz')),
-                                  label: const Text('Get API Key'),
-                                  iconAlignment: IconAlignment.end,
-                                  icon: const Icon(Icons.open_in_new),
-                                ),
-                                TextButton(
-                                  onPressed: () async {
-                                    final text = ref.read(inputTextProvider);
-                                    final api = Api(text);
-                                    final test = await api.testKey();
+                                Column(
+                                  children: [
+                                    Wrap(
+                                      children: [
+                                        TextButton.icon(
+                                          onPressed: () async =>
+                                              await launchUrl(Uri.parse(
+                                                  'https://rapidapi.com/devsdocs/api/game-quiz')),
+                                          label: const Text('Get API Key'),
+                                          iconAlignment: IconAlignment.end,
+                                          icon: const Icon(Icons.open_in_new),
+                                        ),
+                                        TextButton(
+                                          onPressed: () async {
+                                            final text =
+                                                ref.read(inputTextProvider);
+                                            final api = Api(text);
+                                            final test = await api.testKey();
 
-                                    if (!test) {
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(const SnackBar(
-                                          content: Text('Invalid API Key'),
-                                        ));
-                                      }
-                                      return;
-                                    }
-                                    if (context.mounted) {
-                                      Navigator.of(context).pop();
-                                    }
-                                    ref.read(keyProvider.notifier).state = text;
-                                    ref.invalidate(inputTextProvider);
-                                  },
-                                  child: const Text('Submit'),
+                                            if (!test) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                        const SnackBar(
+                                                  content: Text(
+                                                      'Invalid RapidAPI key'),
+                                                ));
+                                              }
+                                              return;
+                                            }
+                                            if (context.mounted) {
+                                              Navigator.of(context).pop();
+                                            }
+                                            ref
+                                                .read(keyProvider.notifier)
+                                                .state = text;
+                                            ref.invalidate(inputTextProvider);
+                                          },
+                                          child: const Text('Submit'),
+                                        ),
+                                      ],
+                                    ),
+                                    const Text(
+                                        'Your RapidAPI key stays in your device and is never shared.'),
+                                  ],
                                 ),
                               ],
                             );
