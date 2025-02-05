@@ -58,7 +58,26 @@ class MainView extends StatelessWidget {
                                 ),
                                 TextButton(
                                   onPressed: () async {
-                                    final text = ref.read(inputTextProvider);
+                                    final text =
+                                        ref.read(inputTextProvider).trim();
+                                    if (text.isEmpty) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(const SnackBar(
+                                          content: Text('Empty field'),
+                                        ));
+                                      }
+                                      return;
+                                    }
+                                    if (text.length != 50) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(const SnackBar(
+                                          content: Text('Invalid key length'),
+                                        ));
+                                      }
+                                      return;
+                                    }
                                     final api = Api(text);
                                     final test = await api.testKey();
 
