@@ -1,5 +1,5 @@
 name: game_quiz
-description: "A new Flutter project."
+description: "MVP Game Quiz App utlizing Gaming Quiz API https://rapidapi.com/devsdocs/api/game-quiz"
 publish_to: 'none'
 version: 0.1.0
 

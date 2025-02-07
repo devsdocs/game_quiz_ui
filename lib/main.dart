@@ -8,7 +8,11 @@ import 'package:game_quiz/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 void main() => runApp(const ProviderScope(
-    child: MaterialApp(debugShowCheckedModeBanner: false, home: MainView())));
+        child: MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: MainView(),
+      title: 'Gaming Quiz',
+    )));
 
 class MainView extends StatelessWidget {
   const MainView({super.key});
