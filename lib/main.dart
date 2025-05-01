@@ -283,7 +283,7 @@ class QuestionCard extends StatelessWidget {
   });
 
   bool _isImageUrl(String url) {
-    return url.startsWith('http://') || url.startsWith('https://');
+    return url.startsWith('t_') && url.endsWith('.webp');
   }
 
   @override
@@ -372,7 +372,8 @@ class QuestionCard extends StatelessWidget {
                       ),
                       child: _isImageUrl(option)
                           ? CachedNetworkImage(
-                              imageUrl: option,
+                              imageUrl:
+                                  'https://images.igdb.com/igdb/image/upload/$option',
                               progressIndicatorBuilder:
                                   (context, url, downloadProgress) => SizedBox(
                                 height: 150,
