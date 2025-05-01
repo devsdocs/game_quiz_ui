@@ -305,7 +305,8 @@ class QuestionCard extends StatelessWidget {
             const SizedBox(height: 10),
             if (question.extraType == 'image_url')
               CachedNetworkImage(
-                imageUrl: question.extraContent,
+                imageUrl:
+                    'https://images.igdb.com/igdb/image/upload/${question.extraContent}',
                 progressIndicatorBuilder: (context, url, downloadProgress) =>
                     SizedBox(
                   height: 250,
