@@ -318,7 +318,7 @@ class QuestionCard extends StatelessWidget {
                 height: 250,
               )
             else
-              Text(question.extraContent),
+              Text('Game: ${question.extraContent}'),
             const SizedBox(height: 10),
             Consumer(builder: (context, ref, child) {
               final questionState =
