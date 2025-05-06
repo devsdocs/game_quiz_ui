@@ -282,9 +282,8 @@ class QuestionCard extends StatelessWidget {
     required this.questionIndex,
   });
 
-  bool _isImageUrl(String url) {
-    return url.startsWith('t_') && url.endsWith('.webp');
-  }
+  bool get isImageExtra => question.extraType == 'image_id';
+  bool get isImageOption => question.isUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -303,10 +302,10 @@ class QuestionCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            if (question.extraType == 'image_url')
+            if (isImageExtra)
               CachedNetworkImage(
                 imageUrl:
-                    'https://images.igdb.com/igdb/image/upload/${question.extraContent}',
+                    'https://images.igdb.com/igdb/image/upload/t_1080p_2x/${question.extraContent}.webp',
                 progressIndicatorBuilder: (context, url, downloadProgress) =>
                     SizedBox(
                   height: 250,
@@ -371,10 +370,10 @@ class QuestionCard extends StatelessWidget {
                         ),
                         borderRadius: BorderRadius.circular(8.0),
                       ),
-                      child: _isImageUrl(option)
+                      child: isImageOption
                           ? CachedNetworkImage(
                               imageUrl:
-                                  'https://images.igdb.com/igdb/image/upload/$option',
+                                  'https://images.igdb.com/igdb/image/upload/t_1080p_2x/$option.webp',
                               progressIndicatorBuilder:
                                   (context, url, downloadProgress) => SizedBox(
                                 height: 150,

@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:game_quiz/model.dart';
 
 const _base = 'game-quiz.p.rapidapi.com';
 
@@ -34,13 +33,12 @@ class Api {
     int amount = 10,
     // QuizType? type,
     // String? session,
-    ImageSize? imageSize,
   }) async =>
       (await _get('/quiz/random', {
         // if (type != null) 'type': type.val,
         'amount': amount.toString(),
+        'refresh': 'true',
         // if (session != null) 'session': session,
-        if (imageSize != null) 'image_size': imageSize.url
       }))
           .data ??
       {};
@@ -49,13 +47,12 @@ class Api {
     int amount = 10,
     // QuizType? type,
     // String? session,
-    ImageSize? imageSize,
   }) async =>
       (await _get('/quiz/trending', {
         // if (type != null) 'type': type.val,
         'amount': amount.toString(),
+        'refresh': 'true',
         // if (session != null) 'session': session,
-        if (imageSize != null) 'image_size': imageSize.url
       }))
           .data ??
       {};
@@ -63,7 +60,7 @@ class Api {
   Future<Map<String, dynamic>> getGameId(
     int gameId, {
     // QuizType? type,
-    ImageSize? imageSize,
+
     // int? limit = 10,
     // int? offset = 0,
     int amount = 10,
@@ -71,7 +68,7 @@ class Api {
       (await _get('/quiz/game/$gameId', {
         // if (type != null) 'type': type.val,
         'amount': amount.toString(),
-        if (imageSize != null) 'image_size': imageSize.url,
+        'refresh': 'true',
         // if (limit != null) 'limit': limit.toString(),
         // if (offset != null) 'offset': offset.toString(),
       }))
@@ -81,7 +78,7 @@ class Api {
   Future<Map<String, dynamic>> getId(
     String id, {
     // QuizType? type,
-    ImageSize? imageSize,
+
     // int? limit = 10,
     // int? offset = 0,
     int amount = 10,
@@ -89,7 +86,8 @@ class Api {
       (await _get('/quiz/id/$id', {
         // if (type != null) 'type': type.val,
         'amount': amount.toString(),
-        if (imageSize != null) 'image_size': imageSize.url,
+        'refresh': 'true',
+
         // if (limit != null) 'limit': limit.toString(),
         // if (offset != null) 'offset': offset.toString(),
       }))

@@ -128,7 +128,7 @@ class Question {
       correctOption: json['options']['correct'],
       extraContent: json['extra']['content'],
       extraType: json['extra']['type'],
-      isUrl: json['options']['is_url'],
+      isUrl: json['options']['is_image'],
       reference: List<String>.from(json['reference']),
     );
   }
