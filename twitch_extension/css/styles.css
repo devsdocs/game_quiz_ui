@@ -1,0 +1,223 @@
+:root {
+  --twitch-purple: #9146FF;
+  --twitch-dark: #0E0E10;
+  --twitch-light: #18181B;
+  --twitch-text: #EFEFF1;
+  --twitch-accent: #772CE8;
+  --correct-green: #00FF7F;
+  --incorrect-red: #FF4040;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: var(--twitch-dark);
+  color: var(--twitch-text);
+  line-height: 1.5;
+}
+
+#app {
+  max-width: 100%;
+  padding: 15px;
+}
+
+#header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-size: 1.5rem;
+  color: var(--twitch-text);
+}
+
+button {
+  background-color: var(--twitch-purple);
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 5px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: var(--twitch-accent);
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal-content {
+  background-color: var(--twitch-light);
+  padding: 20px;
+  border-radius: 5px;
+  width: 90%;
+  max-width: 500px;
+}
+
+.modal h2 {
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+.modal input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+  background-color: var(--twitch-dark);
+  border: 1px solid #444;
+  color: var(--twitch-text);
+  border-radius: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.icon-external-link {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-left: 5px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>');
+  background-size: cover;
+}
+
+/* Question Card Styles */
+.question-card {
+  background-color: var(--twitch-light);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.question-text {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.game-info {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #ccc;
+}
+
+.extra-image {
+  max-width: 100%;
+  height: auto;
+  margin: 10px 0;
+  border-radius: 4px;
+}
+
+.options-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.option {
+  background-color: var(--twitch-dark);
+  border: 2px solid #444;
+  border-radius: 4px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-basis: calc(50% - 10px);
+}
+
+.option:hover {
+  border-color: var(--twitch-purple);
+}
+
+.option.selected {
+  border-color: var(--twitch-purple);
+  background-color: var(--twitch-accent);
+}
+
+.option.correct {
+  border-color: var(--correct-green);
+  background-color: rgba(0, 255, 127, 0.2);
+}
+
+.option.incorrect {
+  border-color: var(--incorrect-red);
+  background-color: rgba(255, 64, 64, 0.2);
+}
+
+.option-image {
+  max-width: 100%;
+  height: auto;
+}
+
+.question-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.reference-link,
+.id-info {
+  display: flex;
+  align-items: center;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.reference-link:hover,
+.id-info:hover {
+  color: var(--twitch-purple);
+}
+
+/* Loading Spinner */
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 20px auto;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top: 4px solid var(--twitch-purple);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

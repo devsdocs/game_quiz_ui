@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gaming Quiz Configuration</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #0E0E10;
+      color: #EFEFF1;
+      line-height: 1.5;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #9146FF;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .info-box {
+      background-color: #18181B;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 12px;
+      color: #898989;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Gaming Quiz Extension Configuration</h1>
+
+    <div class="info-box">
+      <h2>About the Extension</h2>
+      <p>The Gaming Quiz extension allows streamers to engage with their viewers through interactive gaming quizzes.</p>
+      <p>Viewers can test their gaming knowledge with questions about different games, characters, and gaming history.
+      </p>
+    </div>
+
+    <div class="info-box">
+      <h2>How to Use</h2>
+      <p>No configuration is needed. The extension works out of the box.</p>
+      <p>Viewers will need to enter their own RapidAPI key to use the extension.</p>
+      <p>They can get a free key at: <a href="https://rapidapi.com/devsdocs/api/game-quiz"
+          target="_blank">https://rapidapi.com/devsdocs/api/game-quiz</a></p>
+    </div>
+
+    <div class="footer">
+      <p>Gaming Quiz Extension v1.0.0</p>
+      <p>For support or feedback, please contact: support@example.com</p>
+    </div>
+  </div>
+
+  <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+  <script>
+    Twitch.ext.onAuthorized(function (auth) {
+      console.log('Config page loaded', auth);
+    });
+  </script>
+</body>
+
+</html>

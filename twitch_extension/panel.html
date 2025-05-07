@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gaming Quiz</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+  <div id="app">
+    <div id="header">
+      <h1>Gaming Quiz</h1>
+    </div>
+
+    <div id="api-key-section" class="section">
+      <button id="enter-api-key">Enter API Key</button>
+      <p class="note">Your key stays in your device and is never shared.</p>
+    </div>
+
+    <div id="quiz-controls" class="section hidden">
+      <button id="random">Random</button>
+      <button id="trending">Trending</button>
+      <button id="by-id">ID</button>
+      <button id="by-game-id">Game ID</button>
+    </div>
+
+    <div id="questions-container" class="section hidden">
+      <!-- Questions will be dynamically inserted here -->
+    </div>
+
+    <div id="loading" class="hidden">
+      <div class="spinner"></div>
+    </div>
+
+    <div id="error-message" class="hidden">
+      <p></p>
+    </div>
+  </div>
+
+  <!-- Modal templates -->
+  <div id="api-key-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Enter RapidAPI key</h2>
+      <input type="text" id="api-key-input" placeholder="Your key stays in your device and is never shared.">
+      <div class="modal-actions">
+        <button id="get-api-key"><span>Get API Key</span><i class="icon-external-link"></i></button>
+        <button id="submit-api-key">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="id-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Enter Question ID or Category ID</h2>
+      <input type="text" id="id-input" placeholder="Question ID or Category ID">
+      <div class="modal-actions">
+        <button id="submit-id">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="game-id-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Enter IGDB Game ID</h2>
+      <input type="number" id="game-id-input" placeholder="IGDB Game ID">
+      <div class="modal-actions">
+        <button id="submit-game-id">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+  <script src="js/models.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>

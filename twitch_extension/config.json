@@ -1,0 +1,22 @@
+{
+  "manifest_version": 1,
+  "type": "panel",
+  "name": "Gaming Quiz",
+  "description": "A gaming quiz for Twitch streamers and viewers",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "website": "https://example.com",
+  "permissions": [],
+  "panel_height": 500,
+  "views": {
+    "panel": {
+      "viewer_url": "panel.html",
+      "viewer_width": 320,
+      "viewer_height": 500
+    },
+    "config": {
+      "broadcaster_url": "config.html",
+      "viewer_url": "config.html"
+    }
+  }
+}
