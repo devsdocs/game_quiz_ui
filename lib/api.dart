@@ -37,7 +37,6 @@ class Api {
       (await _get('/quiz/random', {
         // if (type != null) 'type': type.val,
         'amount': amount.toString(),
-        'refresh': 'true',
         // if (session != null) 'session': session,
       }))
           .data ??
@@ -51,7 +50,6 @@ class Api {
       (await _get('/quiz/trending', {
         // if (type != null) 'type': type.val,
         'amount': amount.toString(),
-        'refresh': 'true',
         // if (session != null) 'session': session,
       }))
           .data ??
@@ -68,7 +66,6 @@ class Api {
       (await _get('/quiz/game/$gameId', {
         // if (type != null) 'type': type.val,
         'amount': amount.toString(),
-        'refresh': 'true',
         // if (limit != null) 'limit': limit.toString(),
         // if (offset != null) 'offset': offset.toString(),
       }))
@@ -86,7 +83,6 @@ class Api {
       (await _get('/quiz/id/$id', {
         // if (type != null) 'type': type.val,
         'amount': amount.toString(),
-        'refresh': 'true',
 
         // if (limit != null) 'limit': limit.toString(),
         // if (offset != null) 'offset': offset.toString(),
