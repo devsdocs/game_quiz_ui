@@ -408,16 +408,23 @@ class QuestionCard extends StatelessWidget {
                   label: const Text('Reference'),
                 ),
                 TextButton.icon(
-                  onPressed: () async =>
-                      await Clipboard.setData(ClipboardData(text: question.id)),
-                  label: Text('Question ID: ${question.id}'),
+                  onPressed: () async => await Clipboard.setData(
+                      ClipboardData(text: question.id['answer'].toString())),
+                  label: Text('Answer ID: ${question.id['answer']}'),
                   icon: const Icon(Icons.copy),
                   iconAlignment: IconAlignment.end,
                 ),
                 TextButton.icon(
                   onPressed: () async => await Clipboard.setData(
-                      ClipboardData(text: question.categoryId)),
-                  label: Text('Category ID: ${question.categoryId}'),
+                      ClipboardData(text: question.id['question'].toString())),
+                  label: Text('Question ID: ${question.id['question']}'),
+                  icon: const Icon(Icons.copy),
+                  iconAlignment: IconAlignment.end,
+                ),
+                TextButton.icon(
+                  onPressed: () async => await Clipboard.setData(
+                      ClipboardData(text: question.id['category'].toString())),
+                  label: Text('Category ID: ${question.id['category']}'),
                   icon: const Icon(Icons.copy),
                   iconAlignment: IconAlignment.end,
                 ),

@@ -97,8 +97,8 @@ class FetchParams {
 }
 
 class Question {
-  final String id;
-  final String categoryId;
+  final Map<String, dynamic> id;
+
   final String question;
   final List<String> incorrectOptions;
   final List<String> reference;
@@ -109,7 +109,6 @@ class Question {
 
   Question({
     required this.id,
-    required this.categoryId,
     required this.question,
     required this.reference,
     required this.incorrectOptions,
@@ -122,7 +121,6 @@ class Question {
   factory Question.fromJson(Map<String, dynamic> json) {
     return Question(
       id: json['id'],
-      categoryId: json['category_id'],
       question: json['question'],
       incorrectOptions: List<String>.from(json['options']['incorrect']),
       correctOption: json['options']['correct'],
@@ -134,8 +132,7 @@ class Question {
   }
 
   Question copyWith({
-    String? id,
-    String? categoryId,
+    Map<String, dynamic>? id,
     String? question,
     List<String>? incorrectOptions,
     List<String>? reference,
@@ -146,7 +143,6 @@ class Question {
   }) {
     return Question(
         id: id ?? this.id,
-        categoryId: categoryId ?? this.categoryId,
         question: question ?? this.question,
         incorrectOptions: incorrectOptions ?? this.incorrectOptions,
         reference: reference ?? this.reference,
