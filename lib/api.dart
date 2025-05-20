@@ -42,19 +42,6 @@ class Api {
           .data ??
       {};
 
-  Future<Map<String, dynamic>> getRandomTrending({
-    int amount = 10,
-    // QuizType? type,
-    // String? session,
-  }) async =>
-      (await _get('/quiz/trending', {
-        // if (type != null) 'type': type.val,
-        'amount': amount.toString(),
-        // if (session != null) 'session': session,
-      }))
-          .data ??
-      {};
-
   Future<Map<String, dynamic>> getGameId(
     int gameId, {
     // QuizType? type,

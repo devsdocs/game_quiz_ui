@@ -67,12 +67,10 @@ enum QuizType {
 class FetchParams {
   final int? intParam;
   final String? stringParam;
-  final bool isTrending;
 
   FetchParams({
     int? intParam,
     String? stringParam,
-    this.isTrending = false,
   })  : intParam = (intParam != null && stringParam == null) ? intParam : null,
         stringParam =
             (stringParam != null && intParam == null) ? stringParam : null;
